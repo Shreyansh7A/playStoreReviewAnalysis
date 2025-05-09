@@ -4,6 +4,8 @@ Take home assignment for Delhi Startup
 ## AI model used
 gpt 4o
 
+## Configs
+
 Create a .env file and add OPENAI_API_KEY= <your_key>
 
 
