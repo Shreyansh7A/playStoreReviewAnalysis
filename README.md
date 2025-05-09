@@ -4,6 +4,9 @@ Take home assignment for Delhi Startup
 ## AI model used
 gpt 4o
 
+## Create a .env file and add OPENAI_API_KEY-<your api key>
+
+
 ## How to run the Backend
 
 Good practice is to create a virtual environment before installing dependencies. This avoids clash with other projects.
