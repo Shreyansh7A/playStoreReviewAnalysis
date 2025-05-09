@@ -5,6 +5,8 @@ from datetime import datetime
 from services import review_service
 from storage import storage  # Assuming you migrate storage to a Python module
 from datetime import datetime
+from google_play_scraper import search
+
 
 def serialize_datetimes(obj):
     if isinstance(obj, dict):
@@ -53,12 +55,6 @@ async def analyze_app_reviews(req: AnalyzeRequest):
 
         saved_analysis = await storage.create_app_analysis(analysis_data)
 
-        # result = {
-        #     "appInfo": app_info,
-        #     "sentimentData": sentiment_data,
-        #     "reviewSamples": analyzed_reviews[:10],
-        # }
-
         if "createdAt" in saved_analysis and isinstance(saved_analysis["createdAt"], datetime):
             saved_analysis["createdAt"] = saved_analysis["createdAt"].isoformat()
 
@@ -70,12 +66,21 @@ async def analyze_app_reviews(req: AnalyzeRequest):
 
         return JSONResponse(status_code=200, content=serialize_datetimes(result))
 
-        # return JSONResponse(status_code=200, content=result)
-
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="An unexpected error occurred while analyzing app reviews")
+
+@router.get("/reviews/suggest")
+async def suggest_apps(q: str):
+    try:
+        if not q or len(q) < 2:
+            return []
+
+        suggestions = search(q, lang='en', country='us')[:10]  # limit to 10
+        return [{"title": s["title"], "appId": s["appId"]} for s in suggestions]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Failed to fetch suggestions")
 

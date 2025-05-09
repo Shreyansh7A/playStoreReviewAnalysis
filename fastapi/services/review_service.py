@@ -6,10 +6,10 @@ from services.openai import analyze_sentiment as openai_analyze_sentiment
 import asyncio
 import aiohttp
 from functools import partial
+import time
 
 # Rate limiting using a semaphore (5 concurrent tasks max)
 sem = asyncio.Semaphore(5)
-
 
 async def get_app_reviews(app_name_or_id: str) -> Tuple[Dict, List[Dict]]:
     try:
@@ -45,8 +45,12 @@ async def _process_review(review: Dict) -> Optional[Dict]:
 
     try:
         async with sem:
+            start = time.time()
+            logging.info(f"[START] Processing review {review['reviewId']} at {start:.2f}")
             sentiment_result = await openai_analyze_sentiment(review["content"])
-            print(f"Sentiment Result: {sentiment_result}")
+            end = time.time()
+            logging.info(f"[DONE ] Review {review['reviewId']} finished at {end:.2f} (duration: {end - start:.2f}s)")
+
          
         return {
             "id": review.get("reviewId"),

@@ -6,6 +6,12 @@ import logging
 import uvicorn
 
 from routes import router as api_router  # Will be created from your routes.ts equivalent
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 app = FastAPI()
 

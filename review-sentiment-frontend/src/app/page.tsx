@@ -1,13 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function Home() {
   const [appName, setAppName] = useState('');
+  const [suggestions, setSuggestions] = useState<{ title: string; appId: string }[]>([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const fetchSuggestions = async (query: string) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:5001/api/reviews/suggest?q=${query}`);
+      setSuggestions(res.data);
+    } catch (err) {
+      console.error("Failed to fetch suggestions");
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAppName(value);
+
+    if (typingTimeout) clearTimeout(typingTimeout);
+    const timeout = setTimeout(() => fetchSuggestions(value), 300);
+    setTypingTimeout(timeout);
+  };
+
+  const handleSelectSuggestion = (title: string) => {
+    setAppName(title);
+    setSuggestions([]);
+  };
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -26,16 +56,33 @@ export default function Home() {
     <main className="max-w-3xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Play Store App Review Analyzer</h1>
 
-      <input
-        type="text"
-        placeholder="Enter App Name (e.g., Instagram)"
-        className="w-full border p-2 mb-4"
-        value={appName}
-        onChange={(e) => setAppName(e.target.value)}
-      />
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Enter App Name (e.g., Instagram)"
+          className="w-full border p-2 mb-1"
+          value={appName}
+          onChange={handleInputChange}
+        />
+        {suggestions.length > 0 && (
+          <ul className="absolute z-10 bg-gray-800 text-white border border-gray-600 w-full max-h-48 overflow-y-auto shadow-lg rounded-md">
+
+            {suggestions.map((s, i) => (
+              <li
+                key={i}
+                className="px-3 py-2 hover:bg-gray-700 cursor-pointer border-b border-gray-700 last:border-b-0"
+                onClick={() => handleSelectSuggestion(s.title)}
+              >
+                {s.title}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <button
         onClick={handleAnalyze}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
         disabled={loading}
       >
         {loading ? 'Analyzing...' : 'Analyze'}
