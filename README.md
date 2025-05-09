@@ -4,7 +4,7 @@ Take home assignment for Delhi Startup
 ## AI model used
 gpt 4o
 
-## Create a .env file and add OPENAI_API_KEY-<your api key>
+Create a .env file and add OPENAI_API_KEY= <your_key>
 
 
 ## How to run the Backend
@@ -22,5 +22,5 @@ Start the backend via command:
 Navigate to the frontend
 
 Run 
->> npm install
->> npm run dev
+- npm install
+- npm run dev
